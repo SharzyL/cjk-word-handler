@@ -71,7 +71,7 @@ function _select(
     }
 }
 
-function _delete(
+async function _delete(
     editor: TextEditor,
     wordSeparators: string,
     find: Function
@@ -143,12 +143,12 @@ export function deleteWordStartRight(editor: TextEditor, wordSeparators: string)
 
 //-----------------------------------------------------------------------------
 enum CharClass {
-    Alnum,
+    Alnum,  // alphabet & numbers
     Whitespace,
     Punctuation,
     Hiragana,
     Katakana,
-    Chinese,
+    Han,  // Chinese Han characters
     Other,
     Separator,
     Invalid
@@ -302,8 +302,8 @@ function findPreviousWordEnd(
     const classify = makeClassifier(wordSeparators);
 
     let pos = caretPos;
-    if (pos.character == 0) {
-        if (pos.line == 0) {
+    if (pos.character === 0) {
+        if (pos.line === 0) {
             return pos;  // start of document
         } else {
             return doc.positionAt(doc.offsetAt(pos) - 1);  // start of a line
@@ -320,12 +320,12 @@ function findPreviousWordEnd(
     }
     while (klass === initKlass);
 
-    if (klass == CharClass.Whitespace) {
+    if (klass === CharClass.Whitespace) {
         do {
             pos = new Position(pos.line, pos.character - 1);
             klass = classify(doc, pos.line, pos.character - 1);
         }
-        while (klass == CharClass.Whitespace);
+        while (klass === CharClass.Whitespace);
     }
 
     return pos;
@@ -405,8 +405,12 @@ function makeClassifier(wordSeparators: string) {
             return CharClass.Katakana;
         }
 
-        if (0x3200 <= ch && ch <= 0x9fff) {
-            return CharClass.Chinese;
+        if (0x3400 <= ch && ch <= 0x4dbf  // CJK Unified Ideographs Extension A
+            || 0x4e00 <= ch && ch <= 0x9fff  // CJK Unified Ideographs
+            || 0x20000 <= ch && ch <= 0x2a6df  // CJK Unified Ideographs Extension B
+            || 0x2a700 <= ch && ch <= 0x2ebef  // CJK Unified Ideographs Extension C,D,E,F
+            ) {
+            return CharClass.Han;
         }
 
         return CharClass.Other;

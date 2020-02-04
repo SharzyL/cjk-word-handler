@@ -1,12 +1,12 @@
 {
-    "name": "japanese-word-handler",
-    "displayName": "Japanese Word Handler",
-    "description": "Better Japanese word handling on cursor movement",
+    "name": "cjk-word-handler",
+    "displayName": "CJK Word Handler",
+    "description": "Better CJK word handling on cursor movement",
     "version": "1.2.0",
-    "publisher": "sgryjp",
+    "publisher": "sharzyl",
     "repository": {
         "type": "git",
-        "url": "https://github.com/sgryjp/japanese-word-handler.git"
+        "url": "https://github.com/sharzyl/cjk-handler.git"
     },
     "engines": {
         "vscode": "^1.22.0"
@@ -14,7 +14,9 @@
     "categories": [
         "Other"
     ],
-    "extensionKind": "ui",
+    "extensionKind": [
+        "ui"
+    ],
     "license": "Zlib",
     "badges": [
         {

@@ -73,5 +73,4 @@ Please visit the
 [project's GitHub page](https://github.com/sgryjp/japanese-word-handler)
 and report it.
 
-
 **Enjoy!**
