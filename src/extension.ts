@@ -148,6 +148,7 @@ enum CharClass {
     Punctuation,
     Hiragana,
     Katakana,
+    Chinese,
     Other,
     Separator,
     Invalid
@@ -402,6 +403,10 @@ function makeClassifier(wordSeparators: string) {
 
         if (0xff66 <= ch && ch <= 0xff9d) {     // halfwidth katakana
             return CharClass.Katakana;
+        }
+
+        if (0x3200 <= ch && ch <= 0x9fff) {
+            return CharClass.Chinese;
         }
 
         return CharClass.Other;
