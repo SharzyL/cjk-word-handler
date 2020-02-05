@@ -2,6 +2,8 @@
 
 import * as vscode from 'vscode';
 import { Position, Range, Selection, TextDocument, TextEditor } from 'vscode';
+import {isHanChar, Direction, fineNextHanWord} from './cn-util';
+
 
 //-----------------------------------------------------------------------------
 export function activate(context: vscode.ExtensionContext) {
@@ -16,29 +18,16 @@ export function activate(context: vscode.ExtensionContext) {
                 logic(editor, wordSeparators);
             });
         context.subscriptions.push(command);
-    };
+    }
 
     // Register commands
-    registerCommand('japaneseWordHandler.cursorWordEndLeft', cursorWordEndLeft);
-    registerCommand('japaneseWordHandler.cursorWordEndLeftSelect', cursorWordEndLeftSelect);
-    registerCommand('japaneseWordHandler.cursorWordEndRight', cursorWordEndRight);
-    registerCommand('japaneseWordHandler.cursorWordEndRightSelect', cursorWordEndRightSelect);
-    registerCommand('japaneseWordHandler.cursorWordStartLeft', cursorWordStartLeft);
-    registerCommand('japaneseWordHandler.cursorWordStartLeftSelect', cursorWordStartLeftSelect);
-    registerCommand('japaneseWordHandler.cursorWordStartRight', cursorWordStartRight);
-    registerCommand('japaneseWordHandler.cursorWordStartRightSelect', cursorWordStartRightSelect);
-    registerCommand('japaneseWordHandler.deleteWordEndLeft', deleteWordEndLeft);
-    registerCommand('japaneseWordHandler.deleteWordEndRight', deleteWordEndRight);
-    registerCommand('japaneseWordHandler.deleteWordStartLeft', deleteWordStartLeft);
-    registerCommand('japaneseWordHandler.deleteWordStartRight', deleteWordStartRight);
+    registerCommand('cjkWordHandler.cursorWordEndRight', cursorWordEndRight);
+    registerCommand('cjkWordHandler.cursorWordEndRightSelect', cursorWordEndRightSelect);
+    registerCommand('cjkWordHandler.cursorWordStartLeft', cursorWordStartLeft);
+    registerCommand('cjkWordHandler.cursorWordStartLeftSelect', cursorWordStartLeftSelect);
+    registerCommand('cjkWordHandler.deleteWordEndRight', deleteWordEndRight);
+    registerCommand('cjkWordHandler.deleteWordStartLeft', deleteWordStartLeft);
 
-    // Register legacy commands for compatibility
-    registerCommand('extension.cursorWordEndRight', cursorWordEndRight);
-    registerCommand('extension.cursorWordEndRightSelect', cursorWordEndRightSelect);
-    registerCommand('extension.cursorWordStartLeft', cursorWordStartLeft);
-    registerCommand('extension.cursorWordStartLeftSelect', cursorWordStartLeftSelect);
-    registerCommand('extension.deleteWordRight', deleteWordEndRight);
-    registerCommand('extension.deleteWordLeft', deleteWordStartLeft);
 }
 
 //-----------------------------------------------------------------------------
@@ -93,14 +82,6 @@ async function _delete(
     });
 }
 
-export function cursorWordEndLeft(editor: TextEditor, wordSeparators: string) {
-    _move(editor, wordSeparators, findPreviousWordEnd);
-}
-
-export function cursorWordEndLeftSelect(editor: TextEditor, wordSeparators: string) {
-    _select(editor, wordSeparators, findPreviousWordEnd);
-}
-
 export function cursorWordEndRight(editor: TextEditor, wordSeparators: string) {
     _move(editor, wordSeparators, findNextWordEnd);
 }
@@ -117,28 +98,12 @@ export function cursorWordStartLeftSelect(editor: TextEditor, wordSeparators: st
     _select(editor, wordSeparators, findPreviousWordStart);
 }
 
-export function cursorWordStartRight(editor: TextEditor, wordSeparators: string) {
-    _move(editor, wordSeparators, findNextWordStart);
-}
-
-export function cursorWordStartRightSelect(editor: TextEditor, wordSeparators: string) {
-    _select(editor, wordSeparators, findNextWordStart);
-}
-
-export function deleteWordEndLeft(editor: TextEditor, wordSeparators: string) {
-    return _delete(editor, wordSeparators, findPreviousWordEnd);
-}
-
 export function deleteWordEndRight(editor: TextEditor, wordSeparators: string) {
     return _delete(editor, wordSeparators, findNextWordEnd);
 }
 
 export function deleteWordStartLeft(editor: TextEditor, wordSeparators: string) {
     return _delete(editor, wordSeparators, findPreviousWordStart);
-}
-
-export function deleteWordStartRight(editor: TextEditor, wordSeparators: string) {
-    return _delete(editor, wordSeparators, findNextWordStart);
 }
 
 //-----------------------------------------------------------------------------
@@ -152,48 +117,6 @@ enum CharClass {
     Other,
     Separator,
     Invalid
-}
-
-/**
- * Gets position of the start of a word after specified position.
- */
-function findNextWordStart(
-    doc: TextDocument,
-    caretPos: Position,
-    wordSeparators: string
-): Position {
-    // If the cursor is at an end-of-document, return original position.
-    // If the cursor is at an end-of-line, return position of the next line.
-    // Find ending position of a sequence starting with the character at
-    // cursor. Then, return position of where WSPs following the sequence end.
-
-    const classify = makeClassifier(wordSeparators);
-
-    // Check if it's already at end-of-line or end-of-document
-    let klass = classify(doc, caretPos.line, caretPos.character);
-    if (klass === CharClass.Invalid) {
-        const nextLine = caretPos.line + 1;
-        return (nextLine < doc.lineCount)
-            ? new Position(nextLine, 0) // end-of-line
-            : caretPos;                 // end-of-document
-    }
-
-    // Seek until character type changes, unless already reached EOL/EOD
-    let pos = caretPos;
-    klass = classify(doc, pos.line, pos.character);
-    if (classify(doc, pos.line, pos.character) !== CharClass.Invalid) {
-        do {
-            pos = new Position(pos.line, pos.character + 1);
-        }
-        while (klass === classify(doc, pos.line, pos.character));
-    }
-
-    // Skip a series of whitespaces
-    while (classify(doc, pos.line, pos.character) === CharClass.Whitespace) {
-        pos = new Position(pos.line, pos.character + 1);
-    }
-
-    return pos;
 }
 
 /**
@@ -212,35 +135,35 @@ function findNextWordEnd(
     // a non-WSP character sequence which starts with it.
 
     const classify = makeClassifier(wordSeparators);
+    let pos = caretPos;
+    let line = pos.line, col = pos.character;
 
-    // Check if it's already at end-of-line or end-of-document
-    let klass = classify(doc, caretPos.line, caretPos.character);
-    if (klass === CharClass.Invalid) {
+    // Skip a series of whitespaces
+
+    if ( classify(doc, line, col) === CharClass.Invalid ) {
         const nextLine = caretPos.line + 1;
         return (nextLine < doc.lineCount)
             ? new Position(nextLine, 0) // end-of-line
             : caretPos;                 // end-of-document
     }
 
-    // Skip a series of whitespaces
-    let pos = caretPos;
-    if (klass === CharClass.Whitespace) {
-        do {
-            pos = new Position(pos.line, pos.character + 1);
-        }
-        while (classify(doc, pos.line, pos.character) === CharClass.Whitespace);
+    // skip a series of whitespaces
+    while ( classify(doc, line, col) === CharClass.Whitespace ) {
+        col ++;
     }
 
-    // Seek until character type changes, unless already reached EOL/EOD
-    klass = classify(doc, pos.line, pos.character);
-    if (classify(doc, pos.line, pos.character) !== CharClass.Invalid) {
-        do {
-            pos = new Position(pos.line, pos.character + 1);
-        }
-        while (klass === classify(doc, pos.line, pos.character));
+    let klass = classify(doc, line, col);
+
+    // if the next character is Han character, execute word segmenting
+    if (klass === CharClass.Han) {
+        return new Position(line, fineNextHanWord(doc, line, col, Direction.right));
     }
 
-    return pos;
+    // otherwise go forward until class of character changes
+    while ( classify(doc, line, col) === klass ) {
+        col ++;
+    }
+    return new Position(line, col);
 }
 
 /**
@@ -259,76 +182,32 @@ function findPreviousWordStart(
     //   2. reaches start of a line.
 
     const classify = makeClassifier(wordSeparators);
+    let pos = caretPos;
+    let line = pos.line, col = pos.character;
+
+    if (col === 0) { // when at start of line, go to the end of last line
+        line = line ? line - 1 : 0;
+        col = doc.lineAt(line).text.length;
+        return new Position(line, col);
+    }
 
     // Firstly skip whitespaces, excluding EOL codes.
-    function prevCharIsWhitespace() {
-        let prevPos = doc.positionAt(doc.offsetAt(pos) - 1);
-        return (classify(doc, prevPos.line, prevPos.character) === CharClass.Whitespace);
-    }
-    let pos = caretPos;
-    while (prevCharIsWhitespace()) {
-        // Intentionally avoiding to use doc.positionAt(doc.offsetAt())
-        // so that the seek stops at the EOL.
-        if (pos.character <= 0) {
-            return doc.positionAt(doc.offsetAt(pos) - 1);
-        }
-        pos = new Position(pos.line, pos.character - 1);
+    while (classify(doc, line, col - 1) === CharClass.Whitespace) {
+        col --;
     }
 
-    // Then, seek until the character type changes.
-    pos = doc.positionAt(doc.offsetAt(pos) - 1);
-    const initKlass = classify(doc, pos.line, pos.character);
-    let prevPos = doc.positionAt(doc.offsetAt(pos) - 1);
-    while (prevPos.isBefore(pos)) {
-        if (initKlass !== classify(doc, prevPos.line, prevPos.character)) {
-            break;
-        }
+    let klass = classify(doc, line, col - 1);
 
-        pos = prevPos;
-        prevPos = doc.positionAt(doc.offsetAt(pos) - 1);
+    // if the next character is Han character, execute word segmenting
+    if (klass === CharClass.Han) {
+        return new Position(line, fineNextHanWord(doc, line, col, Direction.left));
     }
 
-    return pos;
-}
-
-/**
- * Gets position of where a word before specified position ends.
- */
-function findPreviousWordEnd(
-    doc: TextDocument,
-    caretPos: Position,
-    wordSeparators: string
-) {
-    const classify = makeClassifier(wordSeparators);
-
-    let pos = caretPos;
-    if (pos.character === 0) {
-        if (pos.line === 0) {
-            return pos;  // start of document
-        } else {
-            return doc.positionAt(doc.offsetAt(pos) - 1);  // start of a line
-        }
+    // otherwise go forward until class of character changes
+    while ( classify(doc, line, col - 1) === klass ) {
+        col --;
     }
-    //assert 0 < pos.character
-
-    // Seek until character type changes, unless already reached EOL/EOD
-    let klass: CharClass;
-    let initKlass = classify(doc, pos.line, pos.character - 1);
-    do {
-        pos = new Position(pos.line, pos.character - 1);
-        klass = classify(doc, pos.line, pos.character - 1);
-    }
-    while (klass === initKlass);
-
-    if (klass === CharClass.Whitespace) {
-        do {
-            pos = new Position(pos.line, pos.character - 1);
-            klass = classify(doc, pos.line, pos.character - 1);
-        }
-        while (klass === CharClass.Whitespace);
-    }
-
-    return pos;
+    return new Position(line, col);
 }
 
 /**
@@ -405,11 +284,7 @@ function makeClassifier(wordSeparators: string) {
             return CharClass.Katakana;
         }
 
-        if (0x3400 <= ch && ch <= 0x4dbf  // CJK Unified Ideographs Extension A
-            || 0x4e00 <= ch && ch <= 0x9fff  // CJK Unified Ideographs
-            || 0x20000 <= ch && ch <= 0x2a6df  // CJK Unified Ideographs Extension B
-            || 0x2a700 <= ch && ch <= 0x2ebef  // CJK Unified Ideographs Extension C,D,E,F
-            ) {
+        if (isHanChar(ch)) {
             return CharClass.Han;
         }
 

@@ -6,7 +6,7 @@
     "publisher": "sharzyl",
     "repository": {
         "type": "git",
-        "url": "https://github.com/sharzyl/cjk-handler.git"
+        "url": "https://github.com/sharzyl/cjk-word-handler.git"
     },
     "engines": {
         "vscode": "^1.22.0"
@@ -41,93 +41,51 @@
         }
     ],
     "activationEvents": [
-        "onCommand:japaneseWordHandler.cursorWordEndLeft",
-        "onCommand:japaneseWordHandler.cursorWordEndLeftSelect",
-        "onCommand:japaneseWordHandler.cursorWordEndRight",
-        "onCommand:japaneseWordHandler.cursorWordEndRightSelect",
-        "onCommand:japaneseWordHandler.cursorWordStartLeft",
-        "onCommand:japaneseWordHandler.cursorWordStartLeftSelect",
-        "onCommand:japaneseWordHandler.cursorWordStartRight",
-        "onCommand:japaneseWordHandler.cursorWordStartRightSelect",
-        "onCommand:japaneseWordHandler.deleteWordEndLeft",
-        "onCommand:japaneseWordHandler.deleteWordEndRight",
-        "onCommand:japaneseWordHandler.deleteWordStartLeft",
-        "onCommand:japaneseWordHandler.deleteWordStartRight",
-        "onCommand:extension.cursorNextWordEndJa",
-        "onCommand:extension.cursorNextWordEndSelectJa",
-        "onCommand:extension.cursorPrevWordStartJa",
-        "onCommand:extension.cursorPrevWordStartSelectJa",
-        "onCommand:extension.deleteWordEndRight",
-        "onCommand:extension.deleteWordStartLeft"
+        "onCommand:cjkWordHandler.cursorWordEndRight",
+        "onCommand:cjkWordHandler.cursorWordEndRightSelect",
+        "onCommand:cjkWordHandler.cursorWordStartLeft",
+        "onCommand:cjkWordHandler.cursorWordStartLeftSelect",
+        "onCommand:cjkWordHandler.deleteWordEndRight",
+        "onCommand:cjkWordHandler.deleteWordStartLeft"
     ],
     "main": "./out/extension",
     "contributes": {
         "keybindings": [
             {
-                "command": "japaneseWordHandler.cursorWordEndLeft",
-                "key": "ctrl+alt+shift+9",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "japaneseWordHandler.cursorWordEndLeftSelect",
-                "key": "ctrl+alt+shift+9",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "japaneseWordHandler.cursorWordEndRight",
+                "command": "cjkWordHandler.cursorWordEndRight",
                 "key": "ctrl+right",
                 "mac": "alt+right",
                 "when": "editorTextFocus"
             },
             {
-                "command": "japaneseWordHandler.cursorWordEndRightSelect",
+                "command": "cjkWordHandler.cursorWordEndRightSelect",
                 "key": "ctrl+shift+right",
                 "mac": "alt+shift+right",
                 "when": "editorTextFocus"
             },
             {
-                "command": "japaneseWordHandler.cursorWordStartLeft",
+                "command": "cjkWordHandler.cursorWordStartLeft",
                 "key": "ctrl+left",
                 "mac": "alt+left",
                 "when": "editorTextFocus"
             },
             {
-                "command": "japaneseWordHandler.cursorWordStartLeftSelect",
+                "command": "cjkWordHandler.cursorWordStartLeftSelect",
                 "key": "ctrl+shift+left",
                 "mac": "alt+shift+left",
                 "when": "editorTextFocus"
             },
             {
-                "command": "japaneseWordHandler.cursorWordStartRight",
-                "key": "ctrl+alt+shift+9",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "japaneseWordHandler.cursorWordStartRightSelect",
-                "key": "ctrl+alt+shift+9",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "japaneseWordHandler.deleteWordEndLeft",
-                "key": "ctrl+alt+shift+9",
-                "when": "textInputFocus && !editorReadonly"
-            },
-            {
-                "command": "japaneseWordHandler.deleteWordEndRight",
+                "command": "cjkWordHandler.deleteWordEndRight",
                 "key": "ctrl+delete",
                 "mac": "alt+delete",
-                "when": "textInputFocus && !editorReadonly"
+                "when": "editorTextFocus && !editorReadonly"
             },
             {
-                "command": "japaneseWordHandler.deleteWordStartLeft",
+                "command": "cjkWordHandler.deleteWordStartLeft",
                 "key": "ctrl+backspace",
                 "mac": "alt+backspace",
-                "when": "textInputFocus && !editorReadonly"
-            },
-            {
-                "command": "japaneseWordHandler.deleteWordStartRight",
-                "key": "ctrl+alt+shift+9",
-                "when": "textInputFocus && !editorReadonly"
+                "when": "editorTextFocus && !editorReadonly"
             }
         ]
     },
@@ -144,6 +102,7 @@
         "@types/mocha": "^2.2.42",
         "@types/node": "^8.10.30",
         "bluebird": "^3.5.3",
+        "segment": "^0.1.3",
         "tslint": "^5.11.0",
         "typescript": "^2.9.2",
         "vscode": "^1.1.34"
