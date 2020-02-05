@@ -1,9 +1,10 @@
 {
     "name": "cjk-word-handler",
     "displayName": "CJK Word Handler",
-    "description": "Better CJK word handling on cursor movement",
-    "version": "1.0.0",
-    "publisher": "sharzyl",
+    "description": "Better CJK word handling on cursor movement. Supporting Chinese and Japanese. ",
+    "icon": "images/icon.png",
+    "version": "0.0.1",
+    "publisher": "SharzyL",
     "repository": {
         "type": "git",
         "url": "https://github.com/sharzyl/cjk-word-handler.git"
@@ -18,28 +19,6 @@
         "ui"
     ],
     "license": "Zlib",
-    "badges": [
-        {
-            "url": "https://vsmarketplacebadge.apphb.com/rating-short/sgryjp.japanese-word-handler.svg",
-            "href": "https://marketplace.visualstudio.com/items?itemName=sgryjp.japanese-word-handler",
-            "description": "Rating (VS Marketplace)"
-        },
-        {
-            "url": "https://vsmarketplacebadge.apphb.com/installs-short/sgryjp.japanese-word-handler.svg",
-            "href": "https://marketplace.visualstudio.com/items?itemName=sgryjp.japanese-word-handler",
-            "description": "Number of installations (VS Marketplace)"
-        },
-        {
-            "url": "https://ci.appveyor.com/api/projects/status/eqclfgbaefm5npt8/branch/master?svg=true",
-            "href": "https://ci.appveyor.com/project/sgryjp/japanese-word-handler/branch/master",
-            "description": "Build status"
-        },
-        {
-            "url": "https://img.shields.io/badge/license-zlib-lightgrey.svg?longCache=true&style=popout",
-            "href": "https://github.com/sgryjp/japanese-word-handler/blob/master/LICENSE",
-            "description": "zlib License"
-        }
-    ],
     "activationEvents": [
         "onCommand:cjkWordHandler.cursorWordEndRight",
         "onCommand:cjkWordHandler.cursorWordEndRightSelect",
@@ -90,6 +69,7 @@
         ],
         "configuration": {
             "title": "CJK word handler",
+            "type": "object",
             "properties": {
                 "cjkWordHandler.chinesePartitioningRule": {
                     "type": "string",
@@ -121,5 +101,8 @@
         "tslint": "^5.20.1",
         "typescript": "^2.9.2",
         "vscode": "^1.1.36"
+    },
+    "dependencies": {
+        "segment": "^0.1.3"
     }
 }

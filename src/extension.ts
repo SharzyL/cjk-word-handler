@@ -1,11 +1,6 @@
 'use strict';
 import * as vscode from 'vscode';
 import { Position, Range, Selection, TextDocument, TextEditor } from 'vscode';
-import {isHanChar, Direction, findHanWordBorder, segmentInit} from './cn-util';
-
-let config: {
-    chinesePartitioningRule: ChinesePartitioningRule
-};
 
 export function activate(context: vscode.ExtensionContext) {
     function registerCommand(name: string, cmd: Function) {
@@ -29,8 +24,8 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('cjkWordHandler.deleteWordEndRight', deleteWordEndRight);
     registerCommand('cjkWordHandler.deleteWordStartLeft', deleteWordStartLeft);
 
-    segmentInit();
     parseConfig();
+    segment.useDefault();
 }
 
 function _move(
@@ -127,18 +122,29 @@ enum ChinesePartitioningRule {
     ByWord,
     BySentence
 }
+interface IConfig {
+    chinesePartitioningRule: ChinesePartitioningRule;
+}
+let config: IConfig = {
+    chinesePartitioningRule: ChinesePartitioningRule.ByWord
+};
 function parseConfig() {
-    let rule: string = <string>vscode.workspace.getConfiguration('CJK word handler').get('chinesePartitioningRule');
+    const cfg = vscode.workspace.getConfiguration('cjkWordHandler');
+    const rule = cfg.get('chinesePartitioningRule');
     switch (rule) {
         case "By characters": 
-        config.chinesePartitioningRule = ChinesePartitioningRule.ByCharacter;
-        break;
+            config.chinesePartitioningRule = ChinesePartitioningRule.ByCharacter;
+            break;
         case "By words": 
-        config.chinesePartitioningRule = ChinesePartitioningRule.ByWord;
-        break;
+            config.chinesePartitioningRule = ChinesePartitioningRule.ByWord;
+            break;
         case "By sentences":
-        config.chinesePartitioningRule = ChinesePartitioningRule.BySentence;
-        break;
+            config.chinesePartitioningRule = ChinesePartitioningRule.BySentence;
+            break;
+        default:
+            vscode.window.showErrorMessage(
+                `"${rule}" is not an valid value for chinesePartitioningRule`
+            );
     }
 }
 
@@ -313,4 +319,69 @@ function makeClassifier(wordSeparators: string) {
 
         return CharClass.Other;
     };
+}
+
+let Segment = require('segment');
+
+export const segment = new Segment();
+
+export enum Direction {
+    left,
+    right
+}
+
+function seg(str: string): string[] {
+    switch (config.chinesePartitioningRule) {
+        case ChinesePartitioningRule.ByCharacter:
+            return str.split('');
+        case ChinesePartitioningRule.BySentence:
+            return [str];
+        case ChinesePartitioningRule.ByWord:
+            return segment.doSegment(str, {simple: true});
+    }
+}
+
+export function isHanChar(charCode : number) : boolean {
+    if (0x3400 <= charCode && charCode <= 0x4dbf  // CJK Unified Ideographs Extension A
+        || 0x4e00 <= charCode && charCode <= 0x9fff  // CJK Unified Ideographs
+        || 0x20000 <= charCode && charCode <= 0x2a6df  // CJK Unified Ideographs Extension B
+        || 0x2a700 <= charCode && charCode <= 0x2ebef  // CJK Unified Ideographs Extension C,D,E,F
+        ) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+export function findHanWordBorder(
+    doc: TextDocument,
+    line: number,
+    col: number,
+    direction: Direction,
+): number {
+    let lineText: string = doc.lineAt(line).text;
+    let colStart: number = col, colEnd: number = col;
+
+    while (isHanChar(lineText.charCodeAt(colStart - 1))
+    ) {
+        colStart --;
+    }
+    while (isHanChar(lineText.charCodeAt(colEnd))
+    ) {
+        colEnd ++;
+    }
+
+    let slice = lineText.slice(colStart, colEnd);
+    let segments: string[] = seg(slice);
+    
+    let i: number = -1;
+    while (direction === Direction.left && colStart < col
+        || direction === Direction.right && colStart <= col) {
+        i += 1;
+        colStart += segments[i].length;
+    } 
+    colEnd = colStart;
+    colStart -= segments[i].length;
+
+    return direction === Direction.left ? colStart : colEnd;
 }
