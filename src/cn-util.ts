@@ -1,7 +1,6 @@
-import { TextDocument} from 'vscode';
+import { TextDocument } from 'vscode';
 let Segment = require('segment');
-let segment = new Segment();
-segment.useDefault();
+export let segment = new Segment();
 
 export enum Direction {
     left,
@@ -20,7 +19,7 @@ export function isHanChar(charCode : number) : boolean {
     }
 }
 
-export function fineNextHanWord(
+export function findHanWordBorder(
     doc: TextDocument,
     line: number,
     col: number,

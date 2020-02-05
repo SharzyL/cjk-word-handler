@@ -2,7 +2,7 @@
     "name": "cjk-word-handler",
     "displayName": "CJK Word Handler",
     "description": "Better CJK word handling on cursor movement",
-    "version": "1.2.0",
+    "version": "1.0.0",
     "publisher": "sharzyl",
     "repository": {
         "type": "git",
@@ -87,7 +87,22 @@
                 "mac": "alt+backspace",
                 "when": "editorTextFocus && !editorReadonly"
             }
-        ]
+        ],
+        "configuration": {
+            "title": "CJK word handler",
+            "properties": {
+                "cjkWordHandler.chinesePartitioningRule": {
+                    "type": "string",
+                    "description": "How Chinese text is partitioned when use ctrl shortcut",
+                    "enum": [
+                        "By characters",
+                        "By words",
+                        "By sentences"
+                    ],
+                    "default": "By words"
+                }
+            }
+        }
     },
     "scripts": {
         "compile": "tsc -p ./",
@@ -98,13 +113,13 @@
         "watch": "tsc -watch -p ./"
     },
     "devDependencies": {
-        "@types/bluebird": "^3.5.24",
+        "@types/bluebird": "^3.5.29",
         "@types/mocha": "^2.2.42",
-        "@types/node": "^8.10.30",
-        "bluebird": "^3.5.3",
+        "@types/node": "^8.10.59",
+        "bluebird": "^3.7.2",
         "segment": "^0.1.3",
-        "tslint": "^5.11.0",
+        "tslint": "^5.20.1",
         "typescript": "^2.9.2",
-        "vscode": "^1.1.34"
+        "vscode": "^1.1.36"
     }
 }

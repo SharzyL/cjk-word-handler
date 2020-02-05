@@ -1,23 +1,26 @@
 'use strict';
-
 import * as vscode from 'vscode';
 import { Position, Range, Selection, TextDocument, TextEditor } from 'vscode';
-import {isHanChar, Direction, fineNextHanWord} from './cn-util';
+import {isHanChar, Direction, findHanWordBorder, segment} from './cn-util';
 
+let config: {
+    chinesePartitioningRule: ChinesePartitioningRule
+};
 
 //-----------------------------------------------------------------------------
 export function activate(context: vscode.ExtensionContext) {
-    function registerCommand(name: string, logic: Function) {
-        let command = vscode.commands.registerCommand(
+    function registerCommand(name: string, cmd: Function) {
+        let disposable = vscode.commands.registerCommand(
             name,
             () => {
                 let editor = vscode.window.activeTextEditor!;
                 let wordSeparators = vscode.workspace
                     .getConfiguration("editor", editor.document.uri)
                     .get("wordSeparators");
-                logic(editor, wordSeparators);
+                cmd(editor, wordSeparators);
             });
-        context.subscriptions.push(command);
+        context.subscriptions.push(disposable);
+        vscode.window.showInformationMessage(name + ' registered');
     }
 
     // Register commands
@@ -28,6 +31,8 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('cjkWordHandler.deleteWordEndRight', deleteWordEndRight);
     registerCommand('cjkWordHandler.deleteWordStartLeft', deleteWordStartLeft);
 
+    segment.useDefault();
+    parseConfig();
 }
 
 //-----------------------------------------------------------------------------
@@ -82,6 +87,7 @@ async function _delete(
     });
 }
 
+// export function for testing
 export function cursorWordEndRight(editor: TextEditor, wordSeparators: string) {
     _move(editor, wordSeparators, findNextWordEnd);
 }
@@ -117,6 +123,26 @@ enum CharClass {
     Other,
     Separator,
     Invalid
+}
+
+enum ChinesePartitioningRule {
+    ByCharacter,
+    ByWord,
+    BySentence
+}
+function parseConfig() {
+    let rule: string = <string>vscode.workspace.getConfiguration('CJK word handler').get('chinesePartitioningRule');
+    switch (rule) {
+        case "By characters": 
+        config.chinesePartitioningRule = ChinesePartitioningRule.ByCharacter;
+        break;
+        case "By words": 
+        config.chinesePartitioningRule = ChinesePartitioningRule.ByWord;
+        break;
+        case "By sentences":
+        config.chinesePartitioningRule = ChinesePartitioningRule.BySentence;
+        break;
+    }
 }
 
 /**
@@ -156,7 +182,7 @@ function findNextWordEnd(
 
     // if the next character is Han character, execute word segmenting
     if (klass === CharClass.Han) {
-        return new Position(line, fineNextHanWord(doc, line, col, Direction.right));
+        return new Position(line, findHanWordBorder(doc, line, col, Direction.right));
     }
 
     // otherwise go forward until class of character changes
@@ -200,7 +226,7 @@ function findPreviousWordStart(
 
     // if the next character is Han character, execute word segmenting
     if (klass === CharClass.Han) {
-        return new Position(line, fineNextHanWord(doc, line, col, Direction.left));
+        return new Position(line, findHanWordBorder(doc, line, col, Direction.left));
     }
 
     // otherwise go forward until class of character changes
