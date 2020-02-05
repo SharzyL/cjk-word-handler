@@ -1,10 +1,15 @@
 import { TextDocument } from 'vscode';
-let Segment = require('segment');
-export let segment = new Segment();
+export let segment: any;
 
 export enum Direction {
     left,
     right
+}
+
+export function segmentInit() {
+    let Segment = require('segment');
+    segment = new Segment();
+    segment.useDefault();
 }
 
 export function isHanChar(charCode : number) : boolean {

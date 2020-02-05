@@ -1,13 +1,12 @@
 'use strict';
 import * as vscode from 'vscode';
 import { Position, Range, Selection, TextDocument, TextEditor } from 'vscode';
-import {isHanChar, Direction, findHanWordBorder, segment} from './cn-util';
+import {isHanChar, Direction, findHanWordBorder, segmentInit} from './cn-util';
 
 let config: {
     chinesePartitioningRule: ChinesePartitioningRule
 };
 
-//-----------------------------------------------------------------------------
 export function activate(context: vscode.ExtensionContext) {
     function registerCommand(name: string, cmd: Function) {
         let disposable = vscode.commands.registerCommand(
@@ -20,7 +19,6 @@ export function activate(context: vscode.ExtensionContext) {
                 cmd(editor, wordSeparators);
             });
         context.subscriptions.push(disposable);
-        vscode.window.showInformationMessage(name + ' registered');
     }
 
     // Register commands
@@ -31,11 +29,10 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('cjkWordHandler.deleteWordEndRight', deleteWordEndRight);
     registerCommand('cjkWordHandler.deleteWordStartLeft', deleteWordStartLeft);
 
-    segment.useDefault();
+    segmentInit();
     parseConfig();
 }
 
-//-----------------------------------------------------------------------------
 function _move(
     editor: TextEditor,
     wordSeparators: string,
