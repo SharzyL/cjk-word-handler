@@ -3,7 +3,7 @@
     "displayName": "CJK Word Handler",
     "description": "Better CJK word handling on cursor movement. Supporting Chinese and Japanese. ",
     "icon": "images/icon.png",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "publisher": "SharzyL",
     "repository": {
         "type": "git",

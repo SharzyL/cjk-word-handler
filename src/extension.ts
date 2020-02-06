@@ -25,7 +25,9 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('cjkWordHandler.deleteWordStartLeft', deleteWordStartLeft);
 
     parseConfig();
+    vscode.workspace.onDidChangeConfiguration(parseConfig);
     segment.useDefault();
+    
 }
 
 function _move(
@@ -106,40 +108,41 @@ export function deleteWordStartLeft(editor: TextEditor, wordSeparators: string) 
 
 //-----------------------------------------------------------------------------
 enum CharClass {
-    Alnum,  // alphabet & numbers
+    Alnum,  // alphabet & numbers & underscore
     Whitespace,
     Punctuation,
     Hiragana,
     Katakana,
     Han,  // Chinese Han characters
+    Hangul, // Korean characters
     Other,
     Separator,
-    Invalid
+    Invalid = NaN
 }
 
 enum ChinesePartitioningRule {
-    ByCharacter,
-    ByWord,
-    BySentence
+    ByCharacters,
+    ByWords,
+    BySentences
 }
 interface IConfig {
     chinesePartitioningRule: ChinesePartitioningRule;
 }
 let config: IConfig = {
-    chinesePartitioningRule: ChinesePartitioningRule.ByWord
+    chinesePartitioningRule: ChinesePartitioningRule.ByWords
 };
 function parseConfig() {
     const cfg = vscode.workspace.getConfiguration('cjkWordHandler');
     const rule = cfg.get('chinesePartitioningRule');
     switch (rule) {
         case "By characters": 
-            config.chinesePartitioningRule = ChinesePartitioningRule.ByCharacter;
+            config.chinesePartitioningRule = ChinesePartitioningRule.ByCharacters;
             break;
         case "By words": 
-            config.chinesePartitioningRule = ChinesePartitioningRule.ByWord;
+            config.chinesePartitioningRule = ChinesePartitioningRule.ByWords;
             break;
         case "By sentences":
-            config.chinesePartitioningRule = ChinesePartitioningRule.BySentence;
+            config.chinesePartitioningRule = ChinesePartitioningRule.BySentences;
             break;
         default:
             vscode.window.showErrorMessage(
@@ -169,8 +172,8 @@ function findNextWordEnd(
 
     // Skip a series of whitespaces
 
-    if ( classify(doc, line, col) === CharClass.Invalid ) {
-        const nextLine = caretPos.line + 1;
+    if ( col === doc.lineAt(line).text.length ) {
+        const nextLine = line + 1;
         return (nextLine < doc.lineCount)
             ? new Position(nextLine, 0) // end-of-line
             : caretPos;                 // end-of-document
@@ -215,9 +218,13 @@ function findPreviousWordStart(
     let line = pos.line, col = pos.character;
 
     if (col === 0) { // when at start of line, go to the end of last line
-        line = line ? line - 1 : 0;
-        col = doc.lineAt(line).text.length;
-        return new Position(line, col);
+        if (line === 0) {
+            return pos;
+        } else {
+            line --;
+            col = doc.lineAt(line).text.length;
+            return new Position(line, col);
+        }
     }
 
     // Firstly skip whitespaces, excluding EOL codes.
@@ -289,8 +296,8 @@ function makeClassifier(wordSeparators: string) {
             || (0x3a <= ch && ch <= 0x40)
             || (0x5b <= ch && ch <= 0x60)
             || (0x7b <= ch && ch <= 0x7f)
-            || (0x3001 <= ch && ch <= 0x303f
-                && ch !== 0x3005)               // CJK punctuation marks except Ideographic iteration mark
+            || (0x3001 <= ch && ch <= 0x303f && ch !== 0x3005)               
+                // CJK punctuation marks except Ideographic iteration mark
             || ch === 0x30fb                    // Katakana middle dot
             || (0xff01 <= ch && ch <= 0xff0f)   // "Full width" forms (1)
             || (0xff1a <= ch && ch <= 0xff20)   // "Full width" forms (2)
@@ -299,6 +306,17 @@ function makeClassifier(wordSeparators: string) {
             || (0xffe0 <= ch && ch <= 0xffee)) {// "Full width" forms (5)
             return CharClass.Punctuation;
         }
+
+        if (isHanChar(ch)) {
+            return CharClass.Han;
+        }
+
+        if (0xac00 <= ch && 0xd7a3
+            || 0x1100 <= ch && ch <= 0x11ff
+            || 0x3131 <= ch && ch <= 0x318e
+            || 0xffa1 <= ch && ch <= 0xffdc) {
+                return CharClass.Hangul;
+            }
 
         if ((0x30a0 <= ch && ch <= 0x30ff)      // fullwidth katakana
             && ch !== 0x30fb) {                 // excluding katakana middle dot
@@ -313,44 +331,44 @@ function makeClassifier(wordSeparators: string) {
             return CharClass.Katakana;
         }
 
-        if (isHanChar(ch)) {
-            return CharClass.Han;
-        }
-
         return CharClass.Other;
     };
 }
 
-let Segment = require('segment');
+const Segment = require('segment');
 
 export const segment = new Segment();
 
-export enum Direction {
-    left,
-    right
-}
-
 function seg(str: string): string[] {
     switch (config.chinesePartitioningRule) {
-        case ChinesePartitioningRule.ByCharacter:
+        case ChinesePartitioningRule.ByCharacters:
             return str.split('');
-        case ChinesePartitioningRule.BySentence:
+        case ChinesePartitioningRule.BySentences:
             return [str];
-        case ChinesePartitioningRule.ByWord:
+        case ChinesePartitioningRule.ByWords:
             return segment.doSegment(str, {simple: true});
     }
 }
 
-export function isHanChar(charCode : number) : boolean {
-    if (0x3400 <= charCode && charCode <= 0x4dbf  // CJK Unified Ideographs Extension A
-        || 0x4e00 <= charCode && charCode <= 0x9fff  // CJK Unified Ideographs
-        || 0x20000 <= charCode && charCode <= 0x2a6df  // CJK Unified Ideographs Extension B
-        || 0x2a700 <= charCode && charCode <= 0x2ebef  // CJK Unified Ideographs Extension C,D,E,F
+function isHanChar(charCode : number) : boolean {
+    if (0x3400 <= charCode && charCode <= 0x4dbf  
+        // CJK Unified Ideographs Extension A
+        || 0x4e00 <= charCode && charCode <= 0x9fff  
+        // CJK Unified Ideographs
+        || 0x20000 <= charCode && charCode <= 0x2a6df  
+        // CJK Unified Ideographs Extension B
+        || 0x2a700 <= charCode && charCode <= 0x2ebef  
+        // CJK Unified Ideographs Extension C,D,E,F
         ) {
         return true;
     } else {
         return false;
     }
+}
+
+export enum Direction {
+    left,
+    right
 }
 
 export function findHanWordBorder(

@@ -22,9 +22,11 @@ below (on macOS, use <kbd>⌥Option</kbd> instead of <kbd>Ctrl</kbd>):
 
 Although not visible in command platte, these actions are implemented as commands so that you can reassign any key combinations to them. 
 
-A configuration is provided to customize the partitioning strategy. By default we partition Chinese into words via node segment. If setting `cjkWordHandler.chinesePartitioningRule` to "By characters" or "By sentences", the strategy will change after VSCode reloads. 
+A configuration is provided to customize the partitioning strategy. By default we partition Chinese into words via node segment. We can adjust the strategy by changing `cjkWordHandler.chinesePartitioningRule` to "By characters" or "By sentences". 
 
 ## Known limitations
+
+Due to the limitation of node segment, there will be a delay of one second or so at the first time using this extension. 
 
 As of VSCode 1.41.0, extension cannot override word related actions below:
 

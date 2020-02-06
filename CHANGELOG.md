@@ -11,3 +11,10 @@ to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 - Initial release
 
 ## [0.0.2] - 2020.2.5
+- Removes typos in README
+
+## [0.1.0] - 2020.2.6
+- Fix bug: unexpected behavior when the cursor is at the first line
+- Improvement: reloading is not needed after changing the configuration
+- Fix bug: crash when the cursor move at the beginning or end or line
+- Feature: basic support for Korean Hangul
