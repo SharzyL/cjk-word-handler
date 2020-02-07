@@ -2,7 +2,7 @@
 
 [![zlib license](https://img.shields.io/badge/license-zlib-lightgray.svg?longCache=true&style=popout)](https://github.com/sgryjp/japanese-word-handler/blob/master/LICENSE)
 
-Better cursor movement in CJK language text (Chinese and Japanese included now) for [VS Code](https://code.visualstudio.com). 
+Better cursor movement in CJK language text for [VS Code](https://code.visualstudio.com). 
 
 This is an extension directly modified from another extension [Japanese Word Handler](https://marketplace.visualstudio.com/items?itemName=sgryjp.japanese-word-handler) developed by [sgryjp](https://github.com/sgryjp). [Node segment](https://github.com/leizongmin/node-segment) is used for Chinese word segmentation. 
 

@@ -1,9 +1,9 @@
 {
     "name": "cjk-word-handler",
     "displayName": "CJK Word Handler",
-    "description": "Better CJK word handling on cursor movement. Supporting Chinese and Japanese. ",
+    "description": "Better cursor movement of Ctrl shortcut with CJK language text. ",
     "icon": "images/icon.png",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "SharzyL",
     "repository": {
         "type": "git",
@@ -25,7 +25,9 @@
         "onCommand:cjkWordHandler.cursorWordStartLeft",
         "onCommand:cjkWordHandler.cursorWordStartLeftSelect",
         "onCommand:cjkWordHandler.deleteWordEndRight",
-        "onCommand:cjkWordHandler.deleteWordStartLeft"
+        "onCommand:cjkWordHandler.deleteWordStartLeft",
+        "onLanguage:latex",
+        "onLanguage:markdown"
     ],
     "main": "./out/extension",
     "contributes": {
