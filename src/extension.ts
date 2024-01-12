@@ -9,7 +9,7 @@ import { seg, segInit } from './seg';
 
 let config: IConfig
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
     function registerCommand(name: string, cmd: Function) {
         let disposable = vscode.commands.registerCommand(
             name,
@@ -23,6 +23,8 @@ export function activate(context: vscode.ExtensionContext) {
         context.subscriptions.push(disposable);
     }
 
+    await segInit();
+
     // Register commands
     registerCommand('cjkWordHandler.cursorWordEndRight', cursorWordEndRight);
     registerCommand('cjkWordHandler.cursorWordEndRightSelect', cursorWordEndRightSelect);
@@ -33,7 +35,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     config = parseConfig();
     vscode.workspace.onDidChangeConfiguration(parseConfig);
-    segInit();
 }
 
 // export function for testing

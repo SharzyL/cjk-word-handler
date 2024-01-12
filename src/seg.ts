@@ -4,7 +4,7 @@ const Segment = require('segment');
 
 export const segment = new Segment();
 
-export function segInit() {
+export async function segInit() {
     segment.useDefault();
 }
 
