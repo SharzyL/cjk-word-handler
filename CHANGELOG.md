@@ -7,6 +7,10 @@ The format is based on
 [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) this project adheres
 to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.2.0]
+- Feat: always activate extension on startup, to avoid delay on operation
+- Chore: bump deps and replace npm with yarn
+
 ## [0.1.1]
 - Improvement: pre-activate when opening markdown and latex file
 - Fix bug: reversed CHANGELOG
