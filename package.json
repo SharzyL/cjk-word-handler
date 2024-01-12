@@ -10,7 +10,7 @@
         "url": "https://github.com/sharzyl/cjk-word-handler.git"
     },
     "engines": {
-        "vscode": "^1.22.0"
+        "vscode": "^1.85.1"
     },
     "categories": [
         "Other"
@@ -88,21 +88,19 @@
     },
     "scripts": {
         "compile": "tsc -p ./",
-        "lint": "node ./node_modules/tslint/bin/tslint -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test",
-        "vscode:prepublish": "npm run compile",
+        "lint": "tslint -p ./",
+        "vscode:prepublish": "yarn run compile",
         "watch": "tsc -watch -p ./"
     },
     "devDependencies": {
         "@types/bluebird": "^3.5.29",
-        "@types/mocha": "^2.2.42",
-        "@types/node": "^8.10.59",
+        "@types/mocha": "^10.0.6",
+        "@types/node": "^20.11.0",
+        "@types/vscode": "^1.85.0",
+        "@vscode/vsce": "^2.22.0",
         "bluebird": "^3.7.2",
-        "segment": "^0.1.3",
-        "tslint": "^5.20.1",
-        "typescript": "^2.9.2",
-        "vscode": "^1.1.36"
+        "tslint": "^6.1.3",
+        "typescript": "^5.3.3"
     },
     "dependencies": {
         "segment": "^0.1.3"
