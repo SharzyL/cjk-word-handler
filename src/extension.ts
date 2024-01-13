@@ -34,7 +34,9 @@ export async function activate(context: vscode.ExtensionContext) {
     registerCommand('cjkWordHandler.deleteWordStartLeft', deleteWordStartLeft);
 
     config = parseConfig();
-    vscode.workspace.onDidChangeConfiguration(parseConfig);
+    vscode.workspace.onDidChangeConfiguration(() => {
+        config = parseConfig();
+    });
 }
 
 // export function for testing
