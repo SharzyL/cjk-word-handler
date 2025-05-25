@@ -1,3 +1,6 @@
+> [!NOTE]
+> VSCode have supported this feature since 1.88.0 (https://github.com/microsoft/vscode/pull/203605). This plugin is not longer needed.
+
 # CJK Word Handler
 
 [![zlib license](https://img.shields.io/badge/license-zlib-lightgray.svg?longCache=true&style=popout)](https://github.com/sgryjp/japanese-word-handler/blob/master/LICENSE)
